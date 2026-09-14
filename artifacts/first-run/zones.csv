@@ -1,0 +1,21 @@
+LocationID,Borough,Zone,service_zone
+48,Manhattan,Clinton East,Yellow Zone
+68,Manhattan,East Chelsea,Yellow Zone
+79,Manhattan,East Village,Yellow Zone
+107,Manhattan,Gramercy,Yellow Zone
+140,Manhattan,Lenox Hill East,Yellow Zone
+141,Manhattan,Lenox Hill West,Yellow Zone
+142,Manhattan,Lincoln Square East,Yellow Zone
+161,Manhattan,Midtown Center,Yellow Zone
+162,Manhattan,Midtown East,Yellow Zone
+163,Manhattan,Midtown North,Yellow Zone
+164,Manhattan,Midtown South,Yellow Zone
+170,Manhattan,Murray Hill,Yellow Zone
+186,Manhattan,Penn Station/Madison Sq West,Yellow Zone
+230,Manhattan,Times Sq/Theatre District,Yellow Zone
+234,Manhattan,Union Sq,Yellow Zone
+236,Manhattan,Upper East Side North,Yellow Zone
+237,Manhattan,Upper East Side South,Yellow Zone
+238,Manhattan,Upper West Side North,Yellow Zone
+239,Manhattan,Upper West Side South,Yellow Zone
+249,Manhattan,West Village,Yellow Zone

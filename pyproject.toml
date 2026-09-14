@@ -1,0 +1,23 @@
+[project]
+name = "fleetcast-odysse"
+version = "0.1.0"
+description = "An independent, forecast-first mobility data-science case study"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "numpy>=1.26,<3",
+  "pandas>=2.2,<3",
+  "scikit-learn>=1.5,<2",
+  "threadpoolctl>=3,<4",
+  "duckdb>=1.1,<2",
+  "streamlit>=1.40,<2",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+package = false

@@ -1,0 +1,112 @@
+{
+  "created_at_utc": "2026-09-13T20:27:35.269144+00:00",
+  "data_provenance": {
+    "source": "NYC TLC yellow taxi trip records",
+    "source_page": "https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page",
+    "prepared_at_utc": "2026-09-13T20:27:26.087436+00:00",
+    "sources": [
+      {
+        "file": "yellow_tripdata_2025-01.parquet",
+        "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2025-01.parquet",
+        "bytes": 59158238,
+        "sha256": "9af277e4c0d3f9deb30644da822981e1e7df6af58313170fd3aa8a474485488a"
+      },
+      {
+        "file": "yellow_tripdata_2025-02.parquet",
+        "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2025-02.parquet",
+        "bytes": 60343086,
+        "sha256": "037cba555a73663f3a51a2c27816e40e3feb364769942bdf122b9da31e377bd3"
+      },
+      {
+        "file": "taxi_zone_lookup.csv",
+        "url": "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv",
+        "bytes": 12331,
+        "sha256": "1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed"
+      }
+    ],
+    "panel_sha256": "d16915527ae14c246d23a02d16fa5186a88530c69fc93d93a669958781305fa5",
+    "quality": {
+      "raw_rows": 7052769,
+      "valid_time_and_zone_rows": 7034560,
+      "excluded_rows": 18209,
+      "selected_zone_ids": [
+        48,
+        68,
+        79,
+        107,
+        140,
+        141,
+        142,
+        161,
+        162,
+        163,
+        164,
+        170,
+        186,
+        230,
+        234,
+        236,
+        237,
+        238,
+        239,
+        249
+      ],
+      "panel_rows": 56640,
+      "retained_pickups": 4088332,
+      "selection_rule": "Top 20 Manhattan zones by January 2025 pickup count; ties by zone ID",
+      "training_boundary_exclusive": "2025-02-01 00:00:00",
+      "source_coverage_check": "Every citywide 30-minute interval represented",
+      "missing_zone_bin_assumption": "Zero after source coverage checks; completeness not guaranteed by TLC",
+      "duplicate_rule": "Retained; no unique trip ID, identical pickup fields are not proof of duplication",
+      "timestamp_policy": "NYC local naive time; Jan-Feb 2025 only, no DST transition within period",
+      "rejected_record_rule": "Null/unparseable pickup time, wrong source month, or unknown/non-NYC zone"
+    },
+    "target": "Observed completed yellow-taxi pickups per zone per 30 minutes, not total/unserved demand",
+    "data_is_synthetic": false
+  },
+  "protocol": {
+    "seed": 42,
+    "features": [
+      "zone_code",
+      "slot",
+      "day_of_week",
+      "weekend",
+      "lag_1",
+      "lag_2",
+      "lag_48",
+      "lag_336",
+      "rolling_4",
+      "rolling_48"
+    ],
+    "target_interval": "[timestamp, timestamp + 30 minutes)",
+    "first_feature_timestamp": "2025-01-08 00:00:00",
+    "train_end_exclusive": "2025-02-01 00:00:00",
+    "validation_end_exclusive": "2025-02-15 00:00:00",
+    "test_end_exclusive": "2025-03-01 00:00:00",
+    "partition_rows": {
+      "train": 23040,
+      "validation": 13440,
+      "test": 13440
+    },
+    "evaluation": "Rolling one-step-ahead forecasts; weights fixed during each evaluation period",
+    "past_test_observations": "Earlier observed bins may be lag features for later origins; future bins never are",
+    "availability_assumption": "Previous 30-minute pickup totals available at each forecast origin (zero latency)",
+    "model_recipe": {
+      "loss": "poisson",
+      "max_iter": 120,
+      "max_leaf_nodes": 15,
+      "learning_rate": 0.08,
+      "l2_regularization": 1.0,
+      "early_stopping": false
+    },
+    "test_policy": "One frozen holdout. Re-running is reproduction, not a fresh independent test. No tuning to this score."
+  },
+  "python": "3.12.14",
+  "versions": {
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.9.1",
+    "duckdb": "1.5.5"
+  },
+  "source_code_sha256": "84f8160f606cd50d6f6783700014fa775af6e8353b84748a402a40d69bdaa3fd"
+}
