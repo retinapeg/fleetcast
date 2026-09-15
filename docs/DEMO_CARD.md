@@ -29,14 +29,22 @@ Units: pickups per zone per 30 minutes. Holdout 15–28 Feb 2025, 13,440 predict
 
 ## Click path (≈3 minutes)
 
-1. **Results tab.** Headline cards, then the three-method table on identical rows.
-   Say the unit out loud. Note the model loses on bias — read the right-hand column.
-2. **Forecast replay tab.** Opens on 2025-02-17 (derived: stalest weekly reference).
-   Change zone → Penn Station/Madison Sq West. Toggle "Show baselines" off, then on.
-   The three numbers under the chart are *this zone and day only*.
-3. **Where it fails tab.** All-zone daily bias +5.16 on 17 Feb. Switch the day
-   selector to 2025-02-24 → flips to −1.29. The gap/bias chart shows the mirror.
-4. **Evidence & limits tab.** Protocol, per-day errors, prediction download.
+The result, the baseline bars and four numbered takeaways (Result · Against
+baselines · Failure mode · Limitation) are on the **first screen, before any tab**.
+Three tabs sit underneath: **📈 Forecast**, **🔍 Where does the model fail?**,
+**📋 Method & evidence**.
+
+1. **First screen, no clicks.** Big MAE 10.83, then the three bars: model 10.83,
+   persistence 14.29, previous week 16.22. Say "lower is better" and say the unit
+   out loud. Read takeaway 3 aloud — the model overpredicts, bias +1.96.
+2. **📈 Forecast tab.** Opens on Penn Station/Madison Sq West, 2025-02-17 (derived:
+   stalest weekly reference). Toggle "Show baselines" off, then on. The three numbers
+   under the chart are *this zone and day only*.
+3. **🔍 Where does the model fail? tab.** The two-row table compares 17 Feb
+   (gap −13.45, bias +5.16) with 24 Feb (gap +5.16, bias −1.29). The gap/bias chart
+   shows the mirror. Day-by-day table and per-zone errors are in expanders.
+4. **📋 Method & evidence tab.** Splits, target, model, baselines visible; protocol,
+   provenance, hashes, full metrics and downloads in expanders.
 
 ## Say this
 

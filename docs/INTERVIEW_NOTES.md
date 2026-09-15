@@ -59,31 +59,35 @@ Report both baselines; do not imply persistence was selected on validation.
 
 ## Three-minute demo script
 
-The dashboard has four tabs under a fixed headline row: **Results**, **Forecast
-replay**, **Where it fails**, **Evidence & limits**. The headline cards stay visible
-on every tab.
+The first screen carries the whole argument before any tab is opened: the big
+**Model MAE 10.83**, three like-for-like MAE bars, and four numbered takeaways —
+**1 Result**, **2 Against baselines**, **3 Failure mode**, **4 Limitation**. Three
+tabs sit underneath: **📈 Forecast**, **🔍 Where does the model fail?**, **📋 Method
+& evidence**. RMSE, WAPE, bias and the full table are one expander down.
 
-1. **0:00–0:30 — headline and target.** Show the historical-replay label and the
-   four cards: model MAE 10.83 against persistence 14.29 and previous-week 16.22.
-   Define the unit and mention the 13,440 rows.
-2. **0:30–1:00 — Results tab.** The three-method table on identical rows; WAPE is
-   shown as a percentage here. Read the right-hand notes: the model loses on bias
+1. **0:00–0:30 — first screen, no clicks.** Show the historical-replay label, then
+   the MAE bars: model 10.83, persistence 14.29, previous week 16.22. Say "lower is
+   better", define the unit, mention the 13,440 identical rows. The four takeaways
+   already state the result, the comparison, the failure mode and the limitation.
+2. **0:30–1:00 — open the metric expander.** The three-method table on identical
+   rows; WAPE as a percentage. Read the right-hand notes: the model loses on bias
    (+1.96 versus persistence +0.01), and previous-week — not persistence — was the
    better *validation* baseline.
-3. **1:00–1:40 — Forecast replay tab.** It opens on 2025-02-17, the day whose
-   previous-week reference is furthest out of step; the app says so on screen.
-   Change zone to Penn Station/Madison Sq West. Toggle "Show baselines" off and on.
-   The three numbers under the chart are this zone and day only; do not quote
-   full-period MAE as this day's score.
-4. **1:40–2:20 — Where it fails tab.** Read the explicitly labelled all-zone daily
-   bias: +5.16 on 2025-02-17. Switch the day selector to 2025-02-24: it flips to
-   −1.29. The table shows observed counts, the previous week's counts, the gap and
-   the model bias; the chart under it shows the two series mirroring each other.
-   Explain association, no ablation, fresh test required.
-5. **2:20–3:00 — Evidence & limits tab.** The standing caveats, the split table, the
-   per-day errors and the prediction download. Mention completed trips, the
-   zero-latency assumption and the absence of a causal fleet outcome. The volume
-   ranking and time slider in the replay tab are optional; not dispatch advice.
+3. **1:00–1:40 — 📈 Forecast tab.** It opens on Penn Station/Madison Sq West,
+   2025-02-17 — the day whose previous-week reference is furthest out of step; the
+   app says so on screen. Toggle "Show baselines" off and on. The three numbers
+   under the chart are this zone and day only; do not quote full-period MAE as this
+   day's score.
+4. **1:40–2:20 — 🔍 Where does the model fail? tab.** The two-row comparison table
+   puts 17 Feb (gap −13.45, bias +5.16) beside 24 Feb (gap +5.16, bias −1.29); the
+   chart under it shows the two series mirroring each other. Naming 17 February
+   Presidents' Day is a calendar label, not a mechanism. Explain association, no
+   ablation, fresh test required. The day-by-day and per-zone tables are expanders.
+5. **2:20–3:00 — 📋 Method & evidence tab.** Splits, target, model and baselines are
+   visible; the standing caveats sit under them. Mention completed trips, the
+   zero-latency assumption and the absence of a causal fleet outcome. Protocol,
+   provenance, hashes, full metrics and downloads are in expanders. The volume
+   ranking and time slider in the Forecast tab are optional; not dispatch advice.
 
 ## Error / failure story
 

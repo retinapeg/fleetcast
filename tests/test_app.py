@@ -46,9 +46,9 @@ def test_app_populated_state():
     assert len(app.selectbox[1].options) == 14
     assert len(app.dataframe) == 4
     assert len(app.get("vega_lite_chart")) == 4
-    # The day selector opens on the derived stalest-weekly-reference day, so the
-    # rehearsed failure walkthrough is one click from the headline.
-    assert app.selectbox[1].value == date(2025, 2, 17)
+    # The main demonstration opens on the derived MOST TYPICAL day (smallest absolute
+    # weekly gap), not the failure case; the failure walkthrough is one tab away.
+    assert app.selectbox[1].value == date(2025, 2, 27)
 
     # Real saved-artifact replay: no training or downloads. Exercise reruns, not just defaults.
     for zone, day, bias in [(186, date(2025, 2, 17), 5.157693503768236),
