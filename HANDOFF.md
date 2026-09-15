@@ -1,7 +1,10 @@
 # FleetCast — Build and Evaluation Handoff
 
-**Date:** 13 September 2026
-**Status:** Real-data benchmark complete; chronological validation verified; Streamlit dashboard operational.
+**Date:** 13 September 2026; independently re-verified 15 September 2026
+**Status:** Real-data benchmark complete and verified end to end. Metrics recomputed from
+the saved predictions by a standalone stdlib script; a fresh `prepare` + `run` reproduces
+the benchmark bit-for-bit; dashboard boots clean. The holdout positive bias is now
+diagnosed (weekly-lag staleness) rather than merely reported. See `docs/TEST_STATUS.md`.
 
 ---
 
@@ -224,6 +227,72 @@ Model MAE across the 14 test days ranges 9.21 – 12.83 (mean 10.83). First seve
 
 ---
 
+## Diagnosed failure pattern - weekly-lag staleness around an irregular week
+
+Added 15 September 2026. This is a **diagnosis of the existing frozen result**, computed
+from `artifacts/first-run/predictions.csv.gz`. No model was changed, no feature was added
+and no metric was recomputed in the model's favour. The holdout scores above are untouched.
+
+### The question
+The model overpredicts by +1.96 pickups per zone-bin across the holdout while persistence
+is unbiased (+0.01). Earlier drafts of this document guessed a January-to-February level
+shift. That guess is wrong.
+
+### Evidence against the level-shift explanation
+Mean observed pickups per zone-bin are essentially flat across the two holdout weeks:
+
+| Holdout week | Mean observed | Model bias | Model MAE |
+|---|---:|---:|---:|
+| 15-21 Feb (contains Presidents' Day) | 73.40 | **+3.02** | 11.35 |
+| 22-28 Feb (ordinary week) | 74.24 | **+0.90** | 10.31 |
+
+Demand did not fall. The bias more than tripled anyway, so a level shift cannot explain it.
+
+### What the bias is associated with
+The bias tracks how far the **same half-hour one week earlier** sat from what actually
+happened - which is exactly what the `lag_336` feature and the weekly-naive baseline read.
+Across the 14 holdout days, the correlation between `observed - (observed one week earlier)`
+and the model's daily bias is **r = -0.917** (r-squared approx 0.84). That is a strong
+*association*: the day-to-day bias pattern moves closely with weekly-lag staleness. It is
+not a causal decomposition, and it does not establish that `lag_336` produces 84% of the
+bias. No ablation was run - dropping or gating `lag_336` and re-measuring would be the
+test, and that test needs a fresh period, not this holdout.
+
+The mechanism is visible on two specific days:
+
+| Date | Day | Observed | One week earlier | Gap | Model bias |
+|---|---|---:|---:|---:|---:|
+| Mon 17 Feb | Presidents' Day | 52.24 | 65.69 | **-13.45** | **+5.16** |
+| Mon 24 Feb | ordinary Monday | 57.40 | 52.24 | **+5.16** | **-1.29** |
+
+Presidents' Day demand came in far below the previous Monday, and the model - anchored on
+the weekly lag - overpredicted. One week later the *holiday itself* became the lag feature
+for an ordinary Monday, and the model underpredicted. The error reverses sign, which is the
+signature of a stale seasonal feature rather than a biased level.
+
+The window 17-21 Feb is **36% of holdout rows but contributes 61% of the total +1.96 bias**
+(bias +3.34 inside that window against +1.20 outside it).
+
+### Why this matters beyond the bias number
+The same weekly-lag exposure is the most plausible link to the **baseline rank flip**
+already reported, though this too is an association rather than a demonstrated cause: weekly-naive
+was the better baseline on validation (13.93 vs persistence 15.07) and the worse one on test
+(16.22 vs 14.29). The validation window, 1-14 Feb, contains no public holiday; the test
+window does. Any method leaning on a 7-day lag degrades in that window, the pure weekly
+baseline most of all. One irregular day coincides with movement in both the baseline ranking and the
+model's bias - which is why the model's win is reported against both baselines, not the
+convenient one.
+
+### Honest limits of this diagnosis
+Presidents' Day is a verifiable US federal holiday on 17 February 2025 and its
+school-recess week is a plausible driver, but this analysis establishes the **statistical
+pattern**, not the causal mechanism. No holiday calendar, weather series or event feed was
+joined. The correlation is computed on 14 daily points, which is a small sample. The obvious
+remedy - an irregular-day indicator - has deliberately **not** been implemented, because
+the diagnosis used the holdout and the holdout can no longer serve as a clean test for it.
+
+---
+
 ## Dashboard
 
 **Path:** `app.py`  
@@ -274,7 +343,7 @@ Run headless on port 8599:
 | Holdout evaluation + metrics | Implemented, **independently verified** | MAE/RMSE/WAPE/bias recomputed from `predictions.csv.gz`, matched REPORT.md exactly |
 | Streamlit dashboard | Implemented, tested | Boots (HTTP 200); `test_app_populated_state` asserts selectors, tables and headline metric; **not browser-driven** |
 | Dashboard empty/error state | Implemented, **not exercised now** | `test_app_empty_state` covers it, but only applies before a benchmark exists |
-| Positive-bias explanation | **Not investigated** | Bias +1.96 measured but cause untested |
+| Positive-bias explanation | **Characterised, not causally proven** | Strongly associated with weekly-lag staleness; r=-0.917 across 14 test days, no ablation |
 | Ingestion latency sensitivity | **Not attempted** | Out of scope; zero-latency assumed |
 
 **Blocked:** nothing. No download failures, no dependency conflicts, no hook or permission blockers. Graphify was not used — `graphify-out/graph.json` does not exist in this project, and the build prompt says not to take a tooling detour to create it, so source was read directly.
@@ -322,10 +391,10 @@ Run headless on port 8599:
 4. **Seasonal scope:** Two winter months; does not validate summer travel, holidays, or multi-year patterns.
 5. **Zone scope:** Top 20 Manhattan zones only; excludes outer boroughs and low-activity zones.
 6. **Not a revenue model:** Lower forecast error does not prove shorter waits, higher fares, or fleet revenue.
-7. **Uniform positive bias:** the model overpredicts in every zone (+0.72 to +4.09, overall +1.96) while persistence is essentially unbiased (+0.01). It still wins clearly on MAE, RMSE and WAPE, but a one-sided error of this kind is unexplained by the current analysis and should not be presented as a solved result. The likely explanation is a level shift between the January-dominated training data and the late-February holdout; that has not been tested here.
+7. **Positive bias, now diagnosed (15 Sep 2026):** the model overpredicts in every zone (+0.72 to +4.09, overall +1.96) while persistence is essentially unbiased (+0.01). It still wins clearly on MAE, RMSE and WAPE. The earlier hypothesis in this document - a level shift between January training data and the late-February holdout - is **refuted by the data**: the two test weeks have almost identical mean demand (73.40 vs 74.24 pickups per zone-bin). See "Diagnosed failure pattern" below for the pattern the bias is associated with.
 
 ### Defensible next steps (if more time)
-1. **Diagnose the positive bias:** check whether late-February demand ran below the training level. If so, a bias correction estimated on validation is a cheaper and more honest fix than a larger model.
+1. **Act on the diagnosed bias:** the pattern is consistent with weekly-lag staleness around an irregular week being a major driver, and is not consistent with a level shift (see "Diagnosed failure pattern"). The cheap fix is a holiday/irregular-day indicator feature, or down-weighting `lag_336` when the previous week's same slot diverges from the recent local level. Both must be selected on validation only; the Feb 15-28 holdout has now been examined and cannot serve as a clean test for any such change.
 2. **Latency sensitivity:** Measure telemetry delay; retrain features with realistic lag.
 3. **External features:** Test impact of hour/day boundaries on edge cases (midnight, holidays).
 4. **Outer boroughs:** Extend to all zones if outer-borough trip patterns are similar.
@@ -351,7 +420,7 @@ Run headless on port 8599:
 ### Limitations & next steps (45 sec)
 "Three honest limitations: First, I assume previous pickup counts are instantly available—real systems have telemetry delay. Second, this dataset covers completed trips only; rejected or unmet requests are missing. Third, one forecast model doesn't generalize across all zone types. I don't claim this reduces wait times or increases revenue; that would require supply and travel-time data."
 
-"If I had more time, I'd fit a two-stage model (volume category → zone adjustment) to handle the heterogeneity, measure ingestion latency in a real system, and extend to outer boroughs to test generalization."
+"The failure I would actually lead with is the bias. The model overpredicts by about 2 pickups per zone-bin while persistence is unbiased. I assumed a level shift and the data refuted it - both holdout weeks have the same mean demand. It lines up with the weekly lag: across the 14 holdout days, the gap between what happened and what happened in the same slot a week earlier correlates with the model's daily bias at r = -0.917. I'd call that strongly associated, not proven - I didn't run the ablation. Presidents' Day is the clearest case, and the sign flips the following Monday when the holiday itself becomes the lag feature. The same weekly-lag exposure is the most plausible link to my baseline ranking flipping between validation and test. I did not implement the fix, because I had already spent the holdout diagnosing it."
 
 ---
 
@@ -394,9 +463,10 @@ That the previous half-hour's pickup count is available immediately at forecast 
 ## Reproduction Recipe (for Codex or manual review)
 
 ```bash
-# Start fresh
-cd /Users/leo/Projects/fleetcast-odysse
-rm -rf .venv artifacts/first-run data/processed
+# Start fresh. Note: artifacts/first-run is the frozen evidence set - do NOT delete it.
+# A reproduction writes to a separate directory and leaves the original untouched.
+cd /Users/leonardaarons-ditson/Code/fleetcast-odysse
+rm -rf .venv data/processed
 
 # Install
 uv sync
@@ -406,12 +476,13 @@ uv run pytest -q        # Before prepare/run: 28 pass, 1 skip (populated-app tes
 uv run python -m fleetcast prepare
 # Expected output: 56,640 zone/time rows -> data/processed/panel.csv.gz
 
-# Train & evaluate
-uv run python -m fleetcast run
-# Expected output: benchmark written to artifacts/first-run/
+# Train & evaluate into a separate directory, preserving the frozen first run
+uv run python -m fleetcast run --output artifacts/reproduction
+# Expected output: benchmark written to artifacts/reproduction/
+# Verified 15 Sep 2026: metrics and predictions.csv.gz are bit-identical to first-run
 
 # Verify outputs exist
-ls artifacts/first-run/
+ls artifacts/reproduction/
 # Expected files: REPORT.md, metrics.json, predictions.csv.gz, by_zone.csv, by_day.csv, zones.csv, metadata.json
 
 # Re-run the suite now that artifacts exist: 28 pass, 1 skip (empty-state test N/A)
