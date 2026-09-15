@@ -1,0 +1,13 @@
+# Runtime dependencies for Streamlit Community Cloud.
+# Mirrors [project].dependencies in pyproject.toml; no dev/test packages.
+# Verified locally against: numpy 2.5.3, pandas 2.3.3, scikit-learn 1.9.1,
+# threadpoolctl 3.6.0, duckdb 1.5.5, streamlit 1.63.0.
+numpy>=1.26,<3
+pandas>=2.2,<3
+scikit-learn>=1.5,<2
+threadpoolctl>=3,<4
+duckdb>=1.1,<2
+# app.py uses width="stretch" (1.49), st.container(key=) (1.43),
+# st.metric(border=) and :gray-badge markdown (1.44). Floor raised from the
+# historical >=1.40 to match the APIs actually called.
+streamlit>=1.49,<2

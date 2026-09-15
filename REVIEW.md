@@ -3,7 +3,7 @@
 ## Outcome and scope
 
 **Ready for the local interview demonstration. No blocking issue found in the
-exercised path.** Reviewed checkout: `/Users/leonardaarons-ditson/Code/fleetcast-odysse`,
+exercised path.** Reviewed checkout: local clone of
 origin `https://github.com/retinapeg/fleetcast-odysse.git`, branch `main`, base HEAD
 `a872130d5fbef86869a3085d0418283722c750ae`. The tree was clean before changes.
 No commit or push was made. No Institutional Coding / Workbench files were touched;

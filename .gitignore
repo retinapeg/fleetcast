@@ -8,8 +8,23 @@ __pycache__/
 data/raw/
 data/processed/
 data/tmp/
+# Artifacts are ignored by default. The six derived files the public dashboard
+# reads, plus the run report, are whitelisted by name below -- nothing broader.
+# Raw TLC data never enters the repo; see data/ rules above.
 artifacts/*
 !artifacts/.gitkeep
+!artifacts/first-run/
+artifacts/first-run/*
+!artifacts/first-run/metrics.json
+!artifacts/first-run/metadata.json
+!artifacts/first-run/predictions.csv.gz
+!artifacts/first-run/zones.csv
+!artifacts/first-run/by_zone.csv
+!artifacts/first-run/by_day.csv
+!artifacts/first-run/REPORT.md
 graphify-out/
 .claude/settings.local.json
 .claude/skills/
+
+# Local roundtable evidence: transcripts and workspace copies, not project source.
+.institutional-workbench/

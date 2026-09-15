@@ -5,7 +5,7 @@ One screen. Full detail in `INTERVIEW_NOTES.md`.
 ## Launch
 
 ```bash
-cd /Users/leonardaarons-ditson/Code/fleetcast-odysse
+cd fleetcast-odysse
 ./demo.sh
 ```
 

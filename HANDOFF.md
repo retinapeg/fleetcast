@@ -11,7 +11,7 @@ characterised as associated with weekly-lag staleness; no causal ablation was ru
 ## Current interview launch (15 September 2026)
 
 ```bash
-cd /Users/leonardaarons-ditson/Code/fleetcast-odysse
+cd fleetcast-odysse
 .venv/bin/streamlit run app.py --server.address 127.0.0.1 --server.port 8599 --server.headless true --browser.gatherUsageStats false
 ```
 

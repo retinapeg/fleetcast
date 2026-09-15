@@ -23,7 +23,7 @@ reinforcement learning, dispatch, a digital twin, live ingestion or revenue mode
 ### Interview demo — use the saved result
 
 ```bash
-cd /Users/leonardaarons-ditson/Code/fleetcast-odysse
+cd fleetcast-odysse
 ./demo.sh
 ```
 

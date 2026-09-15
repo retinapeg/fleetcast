@@ -3,7 +3,7 @@
 ## Start here
 
 ```bash
-cd /Users/leonardaarons-ditson/Code/fleetcast-odysse
+cd fleetcast-odysse
 ./demo.sh
 ```
 
