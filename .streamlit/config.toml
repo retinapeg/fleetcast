@@ -1,0 +1,15 @@
+# Presentation settings for the interview demo. No effect on the pipeline,
+# the model or any saved result: this file only controls how the page is drawn.
+[client]
+toolbarMode = "minimal"
+showErrorDetails = "full"
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "light"
+primaryColor = "#2563eb"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f6f8fa"
+textColor = "#0f172a"

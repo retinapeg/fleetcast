@@ -1,169 +1,159 @@
-# Explain the project, do not memorise invented results
+# FleetCast — interview and demo notes
 
-## Before discussing it
-The real-data run is done and independently verified (15 Sep 2026), so
-“I built and evaluated this” is accurate. Be open that coding agents helped
-implement and review it. Own the reasoning, validation and limitations, rather
-than claiming every line was handwritten.
+## Start here
 
-## Numbers you should know cold
-Holdout 15-28 Feb 2025, 13,440 predictions, 20 Manhattan zones, 30-minute bins.
-
-| | MAE | RMSE | WAPE | Bias |
-|---|---:|---:|---:|---:|
-| persistence | 14.29 | 22.19 | 19.4% | +0.01 |
-| weekly-naive | 16.22 | 26.03 | 22.0% | +2.29 |
-| **boosted trees** | **10.83** | **16.50** | **14.7%** | +1.96 |
-
-24% better MAE than persistence, 33% than weekly-naive, same rows for all three.
-Splits: train 8-31 Jan, validation 1-14 Feb, holdout 15-28 Feb, scored once.
-Verified: 28 tests pass; metrics recomputed from the saved predictions with a
-standalone stdlib script; a fresh end-to-end rerun is bit-identical.
-
-## Opening after a successful run
-“I wanted a small example related to operational mobility data, so I built a
-half-hourly pickup forecasting pipeline using public NYC taxi records. I used
-SQL to build a zone/time panel, compared a learned model against persistence and
-weekly seasonality, and evaluated it chronologically rather than randomly splitting
-trips. The interesting part is whether the improvement survives on later dates
-and in which zones it breaks down. It is a proxy study, not a claim about your
-fleet or an increase in driver earnings.”
-
-Add only the measured score and a real failure example from the generated outputs.
-A baseline winning is a legitimate finding, not a reason to hide the baseline.
-
-## Eight things to be able to explain
-1. **Target:** observed pickups per zone in [t,t+30m), not unmet or total demand.
-2. **SQL:** Parquet projection, date/zone validation, half-hour aggregation and
-   joining a complete time grid; why zero is an assumption, not missing at random.
-3. **Timing:** predict at t with past pickup bins; no same-bin counts or future fares.
-   Example: at 10:00 predict 10:00–10:30 using history ending at 10:00.
-4. **Baselines:** last half-hour and same half-hour last week. They are cheap,
-   interpretable and can be hard to beat; comparison uses identical rows.
-5. **Model:** gradient boosting adds small decision trees to correct residual
-   structure. Poisson loss is suitable for nonnegative count targets; it does not
-   establish that all residuals are truly Poisson, nor supply calibrated intervals.
-6. **Evaluation:** model/recipe selected on Feb 1–14; refit on pre-test data;
-   fixed weights on Feb 15–28. Earlier test observations may feed later forecasts.
-7. **Metrics:** MAE is mean absolute pickup-count error. RMSE weights large misses
-   more heavily. WAPE = sum(abs(pred-actual))/sum(actual), not a causal business KPI.
-   Bias = mean(pred-actual); positive means overprediction.
-8. **Limits:** completed-trip censoring, uncertain telemetry latency, unknown
-   vehicle supply and relocation costs, limited winter/city coverage and no
-   counterfactual outcomes. Lower error is not proof of a better dispatch policy.
-
-## How this relates to your background
-The bridge is numerical modelling plus rigorous testing: make assumptions
-explicit, define the observable quantity, compare to a baseline, and investigate
-where a model is wrong. Tie this to your own work only in ways you can substantiate.
-Do not recite claims about experience, customers or operational impact you do not have.
-
-## A good question for the interviewer
-“When you evaluate a positioning recommendation, how do you separate forecasting
-quality from changes in vehicle supply and driver behaviour?”
-
-## Real findings — measured after chronological holdout (Feb 15–28)
-
-**Model selected on validation:** boosted_trees (HistGradientBoostingRegressor, Poisson loss)
-
-**Test period scores (14 days, 13,440 predictions):**
-| Method | MAE | RMSE | WAPE | Bias |
-|---|---:|---:|---:|---:|
-| persistence | 14.29 | 22.19 | 19.4% | +0.01 |
-| weekly_naive | 16.22 | 26.03 | 22.0% | +2.29 |
-| boosted_trees | **10.83** | **16.50** | **14.7%** | +1.96 |
-
-**Improvement:** 24% MAE reduction vs persistence; 33% vs weekly_naive.
-
-**Failure case — high error zone:**
-Penn Station/Madison Sq West is the worst zone on both absolute and relative error: MAE 18.1 and WAPE 21.6%, against 7.4 / 13.2% for the best zone (Lenox Hill West). Because WAPE is also worst there, this is not simply a volume artefact — the zone is genuinely harder to forecast. A plausible cause is surge behaviour around a transport hub (train arrivals, events, weather) that lagged pickup counts alone cannot anticipate. Note the contrast with Midtown Center: high MAE (13.5) but the *best* WAPE (11.5%), which is a volume effect rather than a modelling failure. Comparing MAE alone would have mixed these two cases up.
-
-**Domain limitation:**
-The lagged-pickup features assume previous 30-minute bins are available immediately. Real deployment requires measuring ingestion/telemetry delay. If delay is >30 minutes, the most recent feature is already stale.
-
-**The failure pattern to lead with — weekly-lag staleness (diagnosed, not guessed):**
-The model overpredicts in all 20 zones (+1.96 overall) while persistence is unbiased (+0.01).
-I first assumed a level shift — that late-February demand simply ran below the January
-training level. **The data refuted that:** the two holdout weeks have almost identical mean
-demand, 73.40 and 74.24 pickups per zone-bin, yet bias tripled from +0.90 to +3.02.
-
-The pattern is strongly associated with the weekly lag. Across the 14 holdout days the correlation
-between “observed minus observed one week earlier” and the model's daily bias is
-**r = -0.917** (r-squared approx 0.84). Say "strongly associated with", not "explains 84% of":
-this is a correlation on 14 daily points, not a causal ablation. The pattern shows up on two days:
-
-- **Mon 17 Feb (Presidents' Day):** observed 52.24 vs 65.69 the previous Monday. The model,
-  anchored on `lag_336`, overpredicted by +5.16.
-- **Mon 24 Feb (ordinary Monday):** now the *holiday itself* is the lag feature. Observed
-  runs 5.16 above it and the model underpredicts, bias -1.29.
-
-The error reverses sign — the signature of a stale seasonal feature, not a biased level.
-That window is 36% of holdout rows and 61% of the total bias.
-
-**Tie it to the baseline flip:** the most plausible link - again association, not proof - is
-that the same weekly-lag exposure made weekly-naive the
-better baseline on validation (13.93 vs 15.07) and the worse one on test (16.22 vs 14.29).
-Validation contains no public holiday; the holdout does. One irregular day coincides with both the
-baseline ranking flip and the bias. That is why I report against both baselines.
-
-**Say the limits out loud:** this is an association, not causation. No holiday calendar or
-weather data was joined, it rests on 14 daily points, and I ran no ablation — dropping or
-gating `lag_336` and re-measuring is the test that would actually establish the mechanism,
-and it needs a fresh period.
-
-**Defensible next step:** an irregular-day indicator, or down-weighting `lag_336` when the
-previous week's same slot diverges from the recent local level. I deliberately did **not**
-implement it: the diagnosis used the holdout, so that holdout can no longer be a clean test
-for the fix. The next honest step is a fresh month, selected on validation only.
-
----
-
-## Live demo runbook (verified 15 Sep 2026)
-
-Total time about 3 minutes. Every command below was executed end to end on this
-machine on 15 Sep 2026. Raw data and `artifacts/first-run/` already exist locally,
-so nothing depends on the network during the interview.
-
-**Before the call**
 ```bash
 cd /Users/leonardaarons-ditson/Code/fleetcast-odysse
-uv sync                     # ~1 s warm
-uv run pytest -q            # 28 passed, 1 skipped  (~4 s warm)
-ls artifacts/first-run/     # 7 files must be present
-```
-If `artifacts/first-run/` is missing, stop and rebuild it before the call:
-`uv run python -m fleetcast prepare && uv run python -m fleetcast run`.
-Do not do this during the demo - `prepare` re-downloads about 120 MB.
-
-**The demo**
-```bash
-uv run streamlit run app.py     # http://localhost:8501
-```
-1. **Headline card** - MAE 10.83 on the holdout. Say what the number is: mean
-   absolute error in pickups, per zone, per 30 minutes.
-2. **Baseline table** (expander) - show all three methods on the same 13,440 rows.
-   Make the point that persistence and weekly-naive swap places between validation
-   and test, so you quote the improvement against both.
-3. **Zone selector** - entries read `Zone name . ID`; pick *Lenox Hill West* (MAE 7.4), then *Penn Station/Madison
-   Sq West* (MAE 18.1). Add that Midtown Center has high MAE but the best WAPE, so
-   you read the two together rather than ranking on MAE alone.
-4. **Day selector** - the dropdown lists plain ISO dates, so pick **2025-02-17**.
-   This is Presidents' Day and the clearest instance of the bias pattern: the model
-   line sits above observed for most of the day (daily bias +5.16). Then pick
-   **2025-02-24** and point out that the sign flips (daily bias -1.29) once the
-   holiday itself has become the previous-week lag.
-5. **Protocol expander** - splits, features and model config are recorded in JSON,
-   alongside the data provenance hashes.
-
-**If Streamlit will not start**, fall back to the numbers, which need no server:
-```bash
-uv run pytest -q
-python3 -c "import json;d=json.load(open('artifacts/first-run/metrics.json'));print(json.dumps(d['test'],indent=1))"
+./demo.sh
 ```
 
-**Two things to say unprompted**
-- The holdout was scored once. The bias diagnosis came *after* that scoring, which is
-  exactly why no holiday feature or bias correction has been added - the fix has to be
-  evaluated on a fresh period, not on the window used to find the problem.
-- Completed trips are not demand. This forecasts observed pickups, and lower forecast
-  error is not evidence of shorter waits or higher earnings.
+`demo.sh` pre-flights the environment and the frozen artifacts, frees port 8599 and
+opens http://127.0.0.1:8599 once the server is healthy. Stop with Ctrl-C. The
+installed environment and saved artifacts are sufficient: no installation, download
+or training during the demo. If the server cannot start, the script prints the
+fallback: open `artifacts/first-run/REPORT.md` and these notes. If the artifacts are
+missing, use the report/notes fallback; do not improvise scores.
+
+`docs/DEMO_CARD.md` is the one-screen version of this file to keep open during the call.
+
+## 60–90 second project story
+
+“I built FleetCast as an independent mobility forecasting case study using public
+NYC yellow-taxi records. The question is deliberately narrow: at the start of each
+half-hour, predict observed pickups in the next half-hour across 20 Manhattan zones.
+
+I used DuckDB SQL to build a complete zone/time panel, then compared persistence,
+weekly seasonality and a small gradient-boosted tree model with Poisson loss. The
+features use earlier observations, and evaluation is chronological: January for
+training, early February for validation, and 15–28 February for the holdout. Model
+weights are fixed during the holdout; earlier observed bins feed later forecasts.
+
+On 13,440 predictions, model MAE is 10.83 pickups per zone per half-hour, versus
+14.29 for persistence and 16.22 for weekly seasonality: reductions of 24% and 33%.
+I independently checked the stored predictions against the reported metrics.
+
+The interesting limitation is positive bias, about two pickups per bin. Its daily
+pattern is strongly associated with the weekly lag being out of step with current
+activity. That is a hypothesis, not causal proof. I have not changed the model:
+this diagnosis used the holdout, so a proposed fix needs a fresh test period.
+This forecasts observed trips; it does not establish lower waits or higher earnings.”
+
+Be open that coding agents helped implement and review the project. Own the
+problem definition, assumptions and validation; do not claim every line was handwritten.
+
+## Verified results
+
+Holdout: **15–28 February 2025**, 20 zones × 14 days × 48 bins = **13,440 predictions**.
+MAE, RMSE and bias are pickups per zone per half-hour. WAPE below is a percentage.
+
+| Method | MAE | RMSE | WAPE | Bias |
+|---|---:|---:|---:|---:|
+| Persistence | 14.29 | 22.19 | 19.4% | +0.01 |
+| Weekly-naive | 16.22 | 26.03 | 22.0% | +2.29 |
+| Boosted trees | **10.83** | **16.50** | **14.7%** | **+1.96** |
+
+Exact relative MAE reductions: **24.2%** vs persistence, **33.2%** vs weekly-naive.
+Weekly-naive was the better baseline on validation (13.93 vs 15.07); persistence
+was better on test. The learned model was selected on validation MAE (10.87).
+Report both baselines; do not imply persistence was selected on validation.
+
+## Three-minute demo script
+
+The dashboard has four tabs under a fixed headline row: **Results**, **Forecast
+replay**, **Where it fails**, **Evidence & limits**. The headline cards stay visible
+on every tab.
+
+1. **0:00–0:30 — headline and target.** Show the historical-replay label and the
+   four cards: model MAE 10.83 against persistence 14.29 and previous-week 16.22.
+   Define the unit and mention the 13,440 rows.
+2. **0:30–1:00 — Results tab.** The three-method table on identical rows; WAPE is
+   shown as a percentage here. Read the right-hand notes: the model loses on bias
+   (+1.96 versus persistence +0.01), and previous-week — not persistence — was the
+   better *validation* baseline.
+3. **1:00–1:40 — Forecast replay tab.** It opens on 2025-02-17, the day whose
+   previous-week reference is furthest out of step; the app says so on screen.
+   Change zone to Penn Station/Madison Sq West. Toggle "Show baselines" off and on.
+   The three numbers under the chart are this zone and day only; do not quote
+   full-period MAE as this day's score.
+4. **1:40–2:20 — Where it fails tab.** Read the explicitly labelled all-zone daily
+   bias: +5.16 on 2025-02-17. Switch the day selector to 2025-02-24: it flips to
+   −1.29. The table shows observed counts, the previous week's counts, the gap and
+   the model bias; the chart under it shows the two series mirroring each other.
+   Explain association, no ablation, fresh test required.
+5. **2:20–3:00 — Evidence & limits tab.** The standing caveats, the split table, the
+   per-day errors and the prediction download. Mention completed trips, the
+   zero-latency assumption and the absence of a causal fleet outcome. The volume
+   ranking and time slider in the replay tab are optional; not dispatch advice.
+
+## Error / failure story
+
+The model has positive aggregate bias in all 20 zones. Across the two holdout
+weeks, mean observed counts are similar (73.40 and 74.24), while model bias falls
+from +3.02 to +0.90. A difference in weekly average activity alone does not account
+for this pattern; it does not rule out every kind of distribution or level shift.
+
+Across 14 days, correlate daily mean **observed minus previous-week observed**
+with daily mean **model prediction minus observed**: **r = −0.91734**.
+The saved weekly-naive prediction is exactly the previous-week count, checked
+against the local panel for every forecast row.
+
+| Date | Observed | Previous week | Gap | Model bias |
+|---|---:|---:|---:|---:|
+| 2025-02-17 | 52.24 | 65.69 | −13.45 | +5.16 |
+| 2025-02-24 | 57.40 | 52.24 | +5.16 | −1.29 |
+
+These are daily averages across **all 20 zones**, not Penn Station alone.
+This sign reversal is consistent with stale weekly seasonality. It does not prove
+that `lag_336` caused the model errors, or that a holiday caused the pattern.
+Both correlated quantities contain the same observed value with opposite signs:
+mathematical coupling is another reason correlation is insufficient. There are
+only 14 daily points, temporal dependence, and no lag ablation or external event data.
+Do not say “the lag explains 84% of the error.”
+
+A defensible follow-up would compare a lag ablation or irregular-day feature on
+new chronological development windows, freeze the choice, then evaluate on a
+separate untouched period. No such experiment has been run. The existing holdout
+is now diagnostic material and cannot be a clean test for a diagnosis-driven fix.
+
+Secondary example: Penn Station has the highest model MAE (18.12) and WAPE (21.64%)
+in this sample. Lenox Hill West has the lowest MAE (7.43); Midtown Center has the
+lowest WAPE (11.47%) despite MAE 13.51. Scale changes the rankings. Transport-hub
+surges are a plausible hypothesis, not an established explanation; the model still
+beats both baselines at Penn Station.
+
+## Likely technical questions — concise answers
+
+| Question | Defensible answer |
+|---|---|
+| What exactly is predicted? | Count of observed pickups in [t, t+30 minutes), per selected zone. At 10:00, predict 10:00–10:30 using bins ending at or before 10:00. |
+| Why 30 minutes? | A manageable, operationally motivated case-study resolution. I did not establish an optimal operational horizon or compare horizons. |
+| Why these zones? | Top 20 Manhattan zones by January volume only, ties by zone ID. This limits generalisation to lower-volume zones. |
+| How did you build the data? | Project pickup time and zone from official Parquet; validate month and zone; aggregate with DuckDB; complete the zone/time grid. Citywide coverage checks precede zero filling. |
+| Why retain duplicate-looking records? | The reduced data has no unique trip ID; legitimate pickups can share a time and zone. |
+| How much training data? | Jan 8–31: 24 days and 23,040 rows after seven-day lag warmup. Validation Feb 1–14: 13,440 rows. Refit on all 36,480 pre-test feature rows. |
+| What prevents leakage? | Within-zone shifts, shifted rolling means, chronological partitions, January-only zone selection, and no random internal early-stopping split. |
+| Can test observations become features? | Yes, only at later forecast origins, with fixed weights and the explicit immediate-availability assumption. This is rolling one-step evaluation, not a simultaneous fortnight forecast. |
+| Why boosting and Poisson loss? | A compact nonlinear model for nonnegative counts. Ten features, 120 iterations, up to 15 leaves, learning rate 0.08, L2 1, seed 42. No tuning search; no claim neural networks or ARIMA were beaten. |
+| Are counts proven Poisson? | No. Poisson is the fitting loss; it does not establish the full data distribution or give calibrated prediction intervals. |
+| Why MAE rather than only RMSE? | MAE has direct count units and was the selection metric; RMSE highlights larger misses. Report both plus WAPE and signed bias. |
+| How can MAE improve while bias worsens? | MAE measures absolute error; bias permits positive and negative errors to cancel. Nearly zero bias does not mean accurate predictions. Persistence errors also telescope over contiguous time intervals, so small aggregate bias is a weak accuracy claim. |
+| Is the improvement significant? | It is measured on one two-week holdout. No confidence interval or significance test was run; 13,440 zone-bins are not independent samples. |
+| How would you deploy? | First measure telemetry delay and establish as-of data availability; validate on new periods; forecast each half-hour with monitoring and a baseline fallback. Training cadence must be justified separately. |
+| How does this connect to positioning? | Forecasts are one possible input. A positioning policy also needs supply, travel times, costs and a separate operational evaluation. |
+
+## Limitations / anything not to claim
+
+- Observed completed trips are not total or unmet demand; supply affects observations.
+- No vehicle availability, rejected requests, revenue or travel-cost data.
+- Immediate previous-bin availability is assumed, not demonstrated by retrospective TLC files.
+- One city, two winter months, 20 high-volume Manhattan zones; no London transfer proof.
+- Naive NYC local timestamps are used for Jan–Feb, with no DST transition in scope.
+- Citywide coverage checks cannot prove complete reporting in each zone.
+- No causal holiday/lag result, no ablation, no calibrated intervals, no operational A/B test.
+- No current untouched test for a change motivated by this diagnosis.
+- No RL, dispatch system, digital twin, live feed, Odysse proprietary model or commissioned work.
+
+**Question for Odysse:** “How do you separate forecast quality from the effect of
+vehicle supply and driver behaviour when evaluating positioning recommendations?”
+
+See `docs/TEST_STATUS.md` and `REVIEW.md` for exact verification and remaining warnings.

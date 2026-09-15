@@ -20,7 +20,28 @@ model improve on persistence and a weekly seasonal baseline out of sample?
 Forecasting comes first. This version does **not** implement vehicle relocation,
 reinforcement learning, dispatch, a digital twin, live ingestion or revenue modelling.
 
-### Start on the Mac
+### Interview demo — use the saved result
+
+```bash
+cd /Users/leonardaarons-ditson/Code/fleetcast-odysse
+./demo.sh
+```
+
+`demo.sh` checks the environment and the six frozen artifact files, frees port 8599,
+starts the dashboard and opens the browser once `/healthz` returns 200. If anything
+is missing it prints the recovery command and a fallback instead of starting a
+half-working demo. Stop with Ctrl-C. Equivalent manual command:
+
+```bash
+.venv/bin/streamlit run app.py --server.address 127.0.0.1 --server.port 8599 --server.headless true --browser.gatherUsageStats false
+```
+
+No sync, download, preparation or training is needed. Follow `docs/DEMO_CARD.md` for
+the one-screen click path and `docs/INTERVIEW_NOTES.md` for the full walkthrough.
+The dashboard reads the frozen first-run artifacts; diagnosis has exposed this holdout.
+`.streamlit/config.toml` only sets presentation options (theme, minimal toolbar).
+
+### Original setup / reproduction (not the interview launch path)
 Open Terminal in this folder. `uv` must be installed/on PATH.
 
 ```bash

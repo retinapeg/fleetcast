@@ -1,3 +1,82 @@
+# Current interview readiness — 15 September 2026
+
+## Superseding note — presentation rebuild, 15 September 2026 (later the same day)
+
+`app.py` was rebuilt into a four-tab layout (Results / Forecast replay / Where it
+fails / Evidence & limits) with cached artifact loads, formatted number columns, a
+baselines toggle and a gap-vs-bias chart. `.streamlit/config.toml` (presentation
+only) and `demo.sh` were added. No pipeline, data, model or saved artifact changed.
+
+What was verified in that pass, and what was not:
+
+| Check | Command / action | Result |
+|---|---|---|
+| Full suite | `.venv/bin/python -m pytest -q` | **29 passed, 1 existing warning** |
+| Rendered page | Cached headless-shell over CDP, all four tabs screenshotted | No exception; headline, tables, charts and caveats render |
+| Launcher startup | `./demo.sh` with `open` shadowed by a stub | Pre-flight passed, `/healthz` and `/` both 200, browser-open invoked with the right URL |
+| Launcher Ctrl-C | — | **NOT verified.** Only background startup was exercised; the interactive SIGINT/trap path is untested |
+| Busy-port branch | — | **NOT verified.** The prompt-and-kill path in `demo.sh` was never exercised |
+
+The browser-verification row in the table below predates this rebuild and describes
+the earlier single-page layout ("evidence expander"). The same applies to the
+`app.py:NN` line references in `REVIEW.md`. Both remain as dated historical records;
+they are **not** descriptions of the current file.
+
+
+**PASS for the local interview demo.** Base HEAD
+`a872130d5fbef86869a3085d0418283722c750ae`, branch `main`.
+App presentation, tests and interview documentation changed; the pipeline, source
+data and frozen predictions did not. No real-data model training or downloads ran.
+
+## Checks executed in this readiness pass
+
+| Check | Exact command / action | Result |
+|---|---|---|
+| Full suite | `.venv/bin/python -m pytest -q` | **29 passed, 0 skipped, 1 warning**, final run 4.45 s |
+| Independent evidence | `.venv/bin/python artifacts/demo-readiness/verify_evidence.py` | PASS: all 12 metrics within 1e-9; 13,440 unique rows; 20 zones; all targets and baseline lags match local panel; source and panel hashes match |
+| Server | `.venv/bin/streamlit run app.py --server.port 8599 --server.address 127.0.0.1 --server.headless true --browser.gatherUsageStats false` | Starts; `/healthz` and `/` both HTTP 200 |
+| Real browser | Headless Chromium through rote/Playwright, http://127.0.0.1:8599 | Headline, baseline table, line/bar charts, zone/day selectors and evidence expander exercised |
+| Zone changes | Clinton East → Lenox Hill West → Penn Station/Madison Sq West | Captions/plots update; no app error |
+| Date changes | 2025-02-17 → 2025-02-24 | All-zone daily bias +5.16 → −1.29; both dates selectable |
+| Time slider | 2025-02-24 00:00 → 00:30 using keyboard | New timestamp renders; both charts remain present |
+| Empty state | AppTest executes a copy of app.py in pytest temporary directory | Warning shown; frozen artifacts never moved |
+| Final visual check | Browser reload after MAE unit moved beneath number | 10.83 and complete unit visible; screenshot inspected |
+| Shutdown | Ctrl-C to owned Streamlit process, then socket connection check | Process exit 0; port 8599 refuses connection |
+| Preservation | SHA-256 before/after comparison | All 18 original pipeline/data/first-run files unchanged |
+
+The suite's existing benchmark test fits **synthetic test fixtures only**. The
+real TLC benchmark was not rerun, retrained or optimised in this pass.
+The earlier empty-state skip was removed by testing an isolated temporary copy.
+
+## Warnings and validation limits
+
+- Browser console: **zero errors** in the observed sessions. Vega emits warnings
+  during initial rendering/reruns about infinite extents and categorical scale
+  binding (11 on initial load, 52 across the first interaction session). Plots
+  render with data; these warnings are not suppressed or claimed fixed.
+- Existing NumPy timedelta DeprecationWarning remains at tests/test_fleetcast.py:85.
+- One initial new chart assertion failed because AppTest calls this element
+  `vega_lite_chart`, not `arrow_vega_lite_chart`; corrected, then suite passed.
+- A browser automation wait for the changed headline timed out before explicit
+  page reload. Reload and fresh snapshot verified the final label. This was not
+  a Python application exception. No browser-engine changes were attempted.
+- Screenshots cover headline/baselines, the 17 Feb chart, and the 24 Feb failure
+  table. No claim of exhaustive browser/device coverage or download-button testing.
+- Synthetic-provenance rejection and corrupted-artifact handling were not
+  separately exercised. The app requires the intact frozen bundle.
+
+Local evidence: `artifacts/demo-readiness/` contains the independent checker and
+JSON result, original-file hashes, three screenshots and browser logs/snapshots.
+This directory follows the existing ignored-artifact policy; it is local evidence.
+Browser captures also reside in rote workspace `fleetcast-demo-20260915`.
+No reusable Play was scaffolded or published; only FleetCast readiness was in scope.
+
+## Historical full reproduction evidence
+
+The earlier prepare/run and fresh-download verification below is retained as prior
+evidence. It was **not repeated** in this readiness pass. The holdout has since been
+inspected for diagnosis and is not a clean test for diagnosis-driven changes.
+
 # Verification status
 
 **Verified 15 September 2026 on the target Mac** (Darwin 25.5.0, Apple Silicon),
@@ -74,7 +153,7 @@ One `DeprecationWarning` from `tests/test_fleetcast.py:85` (bare-integer NumPy
 timedelta arithmetic). The test passes; the warning is not suppressed. It will
 become an error under a future NumPy and is a one-line fix when that happens.
 
-## What is still not verified
+## Earlier browser limitation (superseded by current check above)
 
 The dashboard was exercised headless and through its data paths, but not driven
 through a browser, so visual layout and real widget interaction remain unverified.
