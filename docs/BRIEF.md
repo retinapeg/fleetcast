@@ -1,15 +1,13 @@
 # Project brief and scope freeze
 
-## Why this company
-The original September 2026 Odysse advert asks for Python/SQL, practical modelling
-on trip and operational data, experiment evaluation and lightweight tools. It
-also welcomes AI-assisted prototyping. Its fleet positioning problem is a useful
-motivation for this forecast-first project, without pretending to reproduce its
-proprietary reinforcement-learning system.
+## Motivation
+Fleet operators have to decide where vehicles should be before demand appears.
+Short-horizon, zone-level demand forecasts are the first input to that decision,
+so this project builds and honestly evaluates the forecast first, using Python/SQL,
+practical modelling on trip data and lightweight tools. It does not attempt
+relocation, dispatch or reinforcement learning.
 
-Primary role: https://uk.linkedin.com/jobs/view/data-scientist-at-odysse-ltd-4464356243
-Company: https://www.ody.tech/
-Checked: 13 September 2026. No employer data or private methods are assumed.
+Checked: 13 September 2026. Public data only; no employer data or private methods.
 
 ## Product sentence
 “Forecast the next half-hour of observed pickups by zone, compare against simple
@@ -44,7 +42,7 @@ streaming pipeline, database service, embeddings, multi-agent product or deploym
 No hyperparameter search after seeing the holdout. No extra notebooks duplicating
 the implementation merely to inflate the deliverables.
 
-## After the interview, only as possible future work
+## Possible future work
 A genuinely operational evaluation would require vehicle availability, travel
 times, repositioning costs, rejected requests, demand/supply feedback and safe
 online validation. Additional seasons and a new held-out period come before

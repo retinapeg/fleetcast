@@ -1,4 +1,4 @@
-# Current interview readiness — 15 September 2026
+# Current verification status — 15 September 2026
 
 ## Superseding note — presentation rebuild, 15 September 2026 (later the same day)
 
@@ -23,9 +23,9 @@ the earlier single-page layout ("evidence expander"). The same applies to the
 they are **not** descriptions of the current file.
 
 
-**PASS for the local interview demo.** Base HEAD
+**PASS for the local demo.** Base HEAD
 `a872130d5fbef86869a3085d0418283722c750ae`, branch `main`.
-App presentation, tests and interview documentation changed; the pipeline, source
+App presentation, tests and demo documentation changed; the pipeline, source
 data and frozen predictions did not. No real-data model training or downloads ran.
 
 ## Checks executed in this readiness pass

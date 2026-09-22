@@ -93,7 +93,7 @@ daily["Gap"] = daily.pickups - daily.weekly_naive
 daily["Model bias"] = daily[chosen] - daily.pickups
 correlation = daily["Gap"].corr(daily["Model bias"])
 
-st.info("HISTORICAL HOLDOUT REPLAY — not live demand, a dispatch system, or Odysse fleet data.", icon="🗄️")
+st.info("HISTORICAL HOLDOUT REPLAY — not live demand, a dispatch system, or any operator's fleet data.", icon="🗄️")
 
 # ── 2 · The question ────────────────────────────────────────────────────────
 st.markdown(

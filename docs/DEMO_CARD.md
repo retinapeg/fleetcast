@@ -1,11 +1,11 @@
-# FleetCast — interview demo card
+# FleetCast — demo card
 
-One screen. Full detail in `INTERVIEW_NOTES.md`.
+One screen. Full detail in `WALKTHROUGH.md`.
 
 ## Launch
 
 ```bash
-cd fleetcast-odysse
+cd fleetcast
 ./demo.sh
 ```
 

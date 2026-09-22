@@ -1,1 +1,1 @@
-"""FleetCast: independent NYC pickup forecasting; not an Odysse product."""
+"""FleetCast: independent NYC pickup forecasting on public TLC data."""

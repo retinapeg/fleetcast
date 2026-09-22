@@ -8,9 +8,8 @@ and **16.22** for weekly-naive - a 24% MAE reduction over the stronger test base
 Full verification log in `docs/TEST_STATUS.md`; evidence in `artifacts/first-run/`.
 The pipeline reproduces bit-for-bit from the live TLC source. No synthetic figures.
 
-An independent portfolio project motivated by Odysse's fleet decision problem.
-Not an Odysse product, not a reconstruction of its proprietary models, and not a
-claim of work commissioned by the company.
+An independent portfolio project on fleet demand forecasting, built entirely on
+public NYC TLC data. No employer data, proprietary models or commissioned work.
 
 ### The question
 At the start of each half-hour, how many **observed yellow-taxi pickups** will
@@ -20,10 +19,10 @@ model improve on persistence and a weekly seasonal baseline out of sample?
 Forecasting comes first. This version does **not** implement vehicle relocation,
 reinforcement learning, dispatch, a digital twin, live ingestion or revenue modelling.
 
-### Interview demo — use the saved result
+### Quick demo — use the saved result
 
 ```bash
-cd fleetcast-odysse
+cd fleetcast
 ./demo.sh
 ```
 
@@ -37,11 +36,11 @@ half-working demo. Stop with Ctrl-C. Equivalent manual command:
 ```
 
 No sync, download, preparation or training is needed. Follow `docs/DEMO_CARD.md` for
-the one-screen click path and `docs/INTERVIEW_NOTES.md` for the full walkthrough.
+the one-screen click path and `docs/WALKTHROUGH.md` for the full walkthrough.
 The dashboard reads the frozen first-run artifacts; diagnosis has exposed this holdout.
 `.streamlit/config.toml` only sets presentation options (theme, minimal toolbar).
 
-### Original setup / reproduction (not the interview launch path)
+### Original setup / reproduction (not the quick-demo path)
 Open Terminal in this folder. `uv` must be installed/on PATH.
 
 ```bash
@@ -131,11 +130,9 @@ trips can coincide and there is no unique trip ID in this reduced view.
 No fitted pickle is needed: the small fixed recipe is reproducible from code.
 
 ### Sources
-Sources checked 13 September 2026. Read `docs/BRIEF.md` for role alignment and
-`docs/INTERVIEW_NOTES.md` for the explanation to learn before discussing the work.
+Sources checked 13 September 2026. `docs/BRIEF.md` records the scope decisions and
+`docs/WALKTHROUGH.md` explains the method end to end.
 
-- Original Odysse Data Scientist role: https://uk.linkedin.com/jobs/view/data-scientist-at-odysse-ltd-4464356243
-- Odysse company description: https://www.ody.tech/
 - Official TLC trip files, lookup and data dictionaries: https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 - scikit-learn time-series example: https://scikit-learn.org/stable/auto_examples/applications/plot_time_series_lagged_features.html
 - Poisson gradient boosting API: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingRegressor.html

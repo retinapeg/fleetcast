@@ -1,9 +1,9 @@
-# FleetCast — interview and demo notes
+# FleetCast — walkthrough and demo notes
 
 ## Start here
 
 ```bash
-cd fleetcast-odysse
+cd fleetcast
 ./demo.sh
 ```
 
@@ -155,9 +155,9 @@ beats both baselines at Penn Station.
 - Citywide coverage checks cannot prove complete reporting in each zone.
 - No causal holiday/lag result, no ablation, no calibrated intervals, no operational A/B test.
 - No current untouched test for a change motivated by this diagnosis.
-- No RL, dispatch system, digital twin, live feed, Odysse proprietary model or commissioned work.
+- No RL, dispatch system, digital twin, live feed, proprietary model or commissioned work.
 
-**Question for Odysse:** “How do you separate forecast quality from the effect of
+**Open question for fleet operators:** “How do you separate forecast quality from the effect of
 vehicle supply and driver behaviour when evaluating positioning recommendations?”
 
 See `docs/TEST_STATUS.md` and `REVIEW.md` for exact verification and remaining warnings.

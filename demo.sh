@@ -1,5 +1,5 @@
 #!/bin/zsh
-# FleetCast interview demo launcher.
+# FleetCast demo launcher.
 # Read-only: starts the dashboard on the frozen first-run artifacts.
 # It never downloads, prepares, trains or writes into artifacts/ or data/.
 set -u
@@ -13,7 +13,7 @@ PY=.venv/bin/streamlit
 fallback() {
   print -r -- ""
   print -r -- "FALLBACK — do not improvise scores. Present from the saved evidence:"
-  print -r -- "  open $OUT/REPORT.md docs/DEMO_CARD.md docs/INTERVIEW_NOTES.md"
+  print -r -- "  open $OUT/REPORT.md docs/DEMO_CARD.md docs/WALKTHROUGH.md"
   exit 1
 }
 
