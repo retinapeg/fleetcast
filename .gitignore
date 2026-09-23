@@ -23,6 +23,7 @@ artifacts/first-run/*
 !artifacts/first-run/by_day.csv
 !artifacts/first-run/REPORT.md
 graphify-out/
+.claude/settings.json
 .claude/settings.local.json
 .claude/skills/
 
