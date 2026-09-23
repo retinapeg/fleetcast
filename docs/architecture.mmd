@@ -1,18 +1,21 @@
 %% Architecture of fleetcast at commit 1c3ff5c86dd5048bb61f47082b78400005bcb3e5
 %% Sources: fleetcast/__main__.py, fleetcast/data.py, fleetcast/features.py, fleetcast/model.py, app.py, demo.sh, tests/test_fleetcast.py, tests/test_app.py, .gitignore
 %% Render: npx @mermaid-js/mermaid-cli -i docs/architecture.mmd -o docs/images/architecture.svg -b white
-flowchart LR
+flowchart TD
     tlc["NYC TLC public files<br/>Jan + Feb 2025 Parquet,<br/>zone lookup"]
 
-    subgraph offline["Offline: python -m fleetcast"]
-        direction TB
-        prep["prepare (data.py)<br/>download, SHA-256,<br/>DuckDB 30-min counts"]
-        panel[("data/processed<br/>panel + provenance<br/>local, not committed")]
-        feats["run: features.py<br/>past-only lags, rolling,<br/>calendar, zone"]
+    subgraph prepsg["Offline: python -m fleetcast prepare"]
+        direction LR
+        prep["data.py: download,<br/>SHA-256, DuckDB<br/>30-min counts"]
+        panel[("data/processed<br/>20-zone panel, provenance<br/>local, not committed")]
+        prep --> panel
+    end
+
+    subgraph runsg["Offline: python -m fleetcast run"]
+        direction LR
+        feats["features.py<br/>past-only lags, rolling,<br/>calendar, zone"]
         gbt["Poisson gradient-boosted<br/>trees (scikit-learn<br/>HistGradientBoosting)"]
         score["Scoring (model.py)<br/>vs persistence and<br/>weekly-naive baselines"]
-        prep --> panel
-        panel -->|"hash check"| feats
         feats -->|"fit, select on val,<br/>refit pre-test"| gbt
         gbt -->|"holdout forecasts"| score
         feats -->|"lag 1, lag 336"| score
@@ -21,7 +24,7 @@ flowchart LR
     art[("artifacts/first-run<br/>predictions, metrics,<br/>by-zone, by-day CSVs<br/>committed")]
 
     subgraph demo["Dashboard: demo.sh, Streamlit"]
-        direction TB
+        direction LR
         user(["Viewer picks<br/>zone, day, time"])
         app["app.py read-only<br/>holdout replay<br/>no model, no download"]
         user --> app
@@ -29,10 +32,11 @@ flowchart LR
 
     tests["pytest: leakage and<br/>metric checks, AppTest"]
 
-    tlc -->|"download"| offline
-    offline -->|"MAE RMSE WAPE bias"| art
+    tlc -->|"download"| prepsg
+    prepsg -->|"panel, hash check"| runsg
+    runsg -->|"MAE RMSE WAPE bias"| art
     art -->|"reads"| demo
-    tests -.-> offline
+    tests -.-> runsg
     tests -.-> demo
 
     class tlc ext;
