@@ -89,14 +89,7 @@ uv run python -m fleetcast run --output artifacts/reproduction
 Reproduction is not a fresh holdout. Do not change the model after viewing test
 scores and still describe that test as untouched.
 
-### Work with Claude and Codex
-Start Claude in this project and ask it to execute `prompts/CLAUDE_BUILD.md`.
-Once Claude stops, ask Codex to execute `prompts/CODEX_REVIEW.md` on the same folder.
-They should not edit the same working tree simultaneously.
-
-`CLAUDE.md` and `AGENTS.md` pin scope and evidence requirements. Already-working
-Ponytail/Graphify helpers are optional; do not reinstall them or index your home
-folder just to run this project.
+Agent workflow instructions: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### What is implemented
 - Official-source download with byte counts and SHA-256 hashes; DuckDB SQL aggregation.
