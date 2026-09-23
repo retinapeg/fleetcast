@@ -11,6 +11,27 @@ The pipeline reproduces bit-for-bit from the live TLC source. No synthetic figur
 An independent portfolio project on fleet demand forecasting, built entirely on
 public NYC TLC data. No employer data, proprietary models or commissioned work.
 
+![FleetCast Streamlit dashboard: the forecasting question and the held-out answer, model MAE 10.83 against 14.29 for persistence and 16.22 for the previous-week baseline](docs/images/dashboard.png)
+
+*The Streamlit dashboard, run locally from the committed `artifacts/first-run/` files: real NYC TLC holdout results (15-28 Feb 2025), not synthetic data.*
+
+## System architecture
+
+![FleetCast architecture: public TLC files feed an offline prepare-and-run pipeline that scores Poisson gradient-boosted trees against two baselines; the committed artifacts feed a read-only Streamlit dashboard](docs/images/architecture.svg)
+
+*Purple: model call · blue: deterministic code · green: human · amber: evaluation · grey: storage · dashed: external, optional, mocked or planned*
+
+`python -m fleetcast prepare` downloads the two monthly TLC Parquet files and the zone lookup, hashes them and aggregates pickups into a 20-zone, 30-minute panel with DuckDB. `python -m fleetcast run` checks the panel hash, builds past-only features, fits the Poisson gradient-boosted trees and scores them against persistence and previous-week baselines, writing predictions and metrics to `artifacts/first-run/`. The dashboard only reads those committed files: it does not download data, train or run the model.
+
+## How AI is used
+
+- **Model:** one learned model, scikit-learn `HistGradientBoostingRegressor` with Poisson loss and a fixed recipe (120 iterations, 15 leaves, learning rate 0.08, L2 1.0, seed 42). No LLM, API key or external inference service is involved.
+- **Inputs:** ten features per zone and half-hour: lags of 1, 2, 48 and 336 bins, shifted rolling means over 4 and 48 bins, time slot, day of week, weekend flag and categorical zone.
+- **Output:** a non-negative pickup count for the next 30 minutes, saved to `predictions.csv.gz` beside both baselines. It is a forecast, not a relocation or dispatch decision.
+- **Deterministic and human parts:** download, hashing, SQL aggregation, features, baselines, metrics and the dashboard are plain code; the viewer only chooses which zone, day and time to replay.
+- **Evaluation:** fitted on 8-31 Jan, selected on validation MAE (1-14 Feb), refitted on all pre-test data and scored once on the 15-28 Feb holdout (see [The experiment](#the-experiment)); `pytest` covers leakage, metrics and the dashboard.
+- **Limitations:** the model runs only inside `fleetcast run`, never live; it overpredicts on the holdout (bias +1.96) and assumes zero data latency (see [What must not be inferred](#what-must-not-be-inferred)).
+
 ### The question
 At the start of each half-hour, how many **observed yellow-taxi pickups** will
 occur in each selected NYC zone during the next half-hour? Does a small learned
