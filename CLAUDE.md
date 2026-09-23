@@ -3,7 +3,7 @@
 Read README.md, docs/BRIEF.md and prompts/CLAUDE_BUILD.md before editing.
 
 Goal: one defensible mobility data-science case study, not a startup or hackathon platform.
-The owner needs a clear explanation and measured results for an interview.
+The owner needs a clear explanation and measured results.
 
 Keep the existing architecture: Python, DuckDB SQL, pandas, scikit-learn, Streamlit.
 No agents inside the product, external LLM calls, frontend rebuilds, RL or simulation.
