@@ -163,7 +163,7 @@ def test_no_real_data_fails_closed(tmp_path):
 
 def test_duckdb_aggregation_integration(tmp_path):
     """Dependency-gated here; must run without skip on the fully installed Mac."""
-    duckdb = pytest.importorskip("duckdb", reason="DuckDB not installed in the artifact authoring environment")
+    duckdb = pytest.importorskip("duckdb", reason="DuckDB not installed in this environment")
     from fleetcast.data import aggregate_files
     paths = []
     with duckdb.connect() as con:

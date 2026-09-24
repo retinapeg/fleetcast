@@ -5,7 +5,7 @@ import pytest
 
 
 def test_app_empty_state(tmp_path):
-    pytest.importorskip("streamlit", reason="Streamlit not installed in the artifact authoring environment")
+    pytest.importorskip("streamlit", reason="Streamlit not installed in this environment")
     from streamlit.testing.v1 import AppTest
     root = Path(__file__).resolve().parents[1]
     # Exercise the missing-artifact branch without moving or modifying real evidence.
@@ -17,7 +17,7 @@ def test_app_empty_state(tmp_path):
 
 
 def test_app_populated_state():
-    pytest.importorskip("streamlit", reason="Streamlit not installed in the artifact authoring environment")
+    pytest.importorskip("streamlit", reason="Streamlit not installed in this environment")
     from streamlit.testing.v1 import AppTest
     root = Path(__file__).resolve().parents[1]
     if not (root / "artifacts" / "first-run" / "metrics.json").exists():

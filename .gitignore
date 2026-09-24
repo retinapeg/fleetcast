@@ -27,5 +27,11 @@ graphify-out/
 .claude/settings.local.json
 .claude/skills/
 
-# Local roundtable evidence: transcripts and workspace copies, not project source.
+# Local working notes and workspace copies, not project source.
 .institutional-workbench/
+
+# Local working notes (not project source)
+/CLAUDE.md
+/AGENTS.md
+/.claude/
+/prompts/

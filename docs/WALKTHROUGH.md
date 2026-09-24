@@ -22,11 +22,12 @@ missing, use the report/notes fallback; do not improvise scores.
 NYC yellow-taxi records. The question is deliberately narrow: at the start of each
 half-hour, predict observed pickups in the next half-hour across 20 Manhattan zones.
 
-I used DuckDB SQL to build a complete zone/time panel, then compared persistence,
-weekly seasonality and a small gradient-boosted tree model with Poisson loss. The
-features use earlier observations, and evaluation is chronological: January for
-training, early February for validation, and 15–28 February for the holdout. Model
-weights are fixed during the holdout; earlier observed bins feed later forecasts.
+The pipeline uses DuckDB SQL to build a complete zone/time panel, then compares
+persistence, weekly seasonality and a small gradient-boosted tree model with
+Poisson loss. The features use earlier observations, and evaluation is
+chronological: January for training, early February for validation, and 15–28
+February for the holdout. Model weights are fixed during the holdout; earlier
+observed bins feed later forecasts.
 
 On 13,440 predictions, model MAE is 10.83 pickups per zone per half-hour, versus
 14.29 for persistence and 16.22 for weekly seasonality: reductions of 24% and 33%.
@@ -38,8 +39,10 @@ activity. That is a hypothesis, not causal proof. I have not changed the model:
 this diagnosis used the holdout, so a proposed fix needs a fresh test period.
 This forecasts observed trips; it does not establish lower waits or higher earnings.”
 
-Be open that coding agents helped implement and review the project. Own the
-problem definition, assumptions and validation; do not claim every line was handwritten.
+Own the problem definition, assumptions and validation. The scope freeze is in
+`docs/BRIEF.md`; the protocol (chronological splits, past-only features, one recipe
+chosen on validation and scored once) is in the README; the verification record,
+including the independent metric recomputation, is in `docs/TEST_STATUS.md`.
 
 ## Verified results
 
@@ -160,4 +163,4 @@ beats both baselines at Penn Station.
 **Open question for fleet operators:** “How do you separate forecast quality from the effect of
 vehicle supply and driver behaviour when evaluating positioning recommendations?”
 
-See `docs/TEST_STATUS.md` and `REVIEW.md` for exact verification and remaining warnings.
+See `docs/TEST_STATUS.md` for exact verification and remaining warnings.

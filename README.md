@@ -89,7 +89,7 @@ uv run python -m fleetcast run --output artifacts/reproduction
 Reproduction is not a fresh holdout. Do not change the model after viewing test
 scores and still describe that test as untouched.
 
-Agent workflow instructions: see [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributing guidelines: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### What is implemented
 - Official-source download with byte counts and SHA-256 hashes; DuckDB SQL aggregation.

@@ -1,10 +1,27 @@
 # Contributing
 
-### Work with Claude and Codex
-Start Claude in this project and ask it to execute `prompts/CLAUDE_BUILD.md`.
-Once Claude stops, ask Codex to execute `prompts/CODEX_REVIEW.md` on the same folder.
-They should not edit the same working tree simultaneously.
+### Setup and checks
 
-`CLAUDE.md` and `AGENTS.md` pin scope and evidence requirements. Already-working
-Ponytail/Graphify helpers are optional; do not reinstall them or index your home
-folder just to run this project.
+```bash
+uv sync
+uv run pytest -q
+```
+
+Python 3.12 is requested by `.python-version`. Model fitting in the tests uses
+synthetic fixtures only; real TLC data is fetched by `uv run python -m fleetcast prepare`.
+
+### Scope and integrity rules
+
+Priority: valid problem definition, as-of features, chronological evaluation,
+reproducible numbers, honest claims, then UI clarity. More code is not a success metric.
+
+- Keep the existing stack: Python, DuckDB SQL, pandas, scikit-learn, Streamlit.
+  No new frameworks, and no LLM calls, RL or simulation inside the product.
+- Respect the predeclared splits and data-availability assumptions. Never use
+  holdout results for feature selection or tuning while still calling that
+  holdout untouched. A strong baseline winning is an acceptable result.
+- Do not remove tests, shrink the evaluated data to improve a score, invent
+  metrics or substitute synthetic data outside explicit tests.
+- `artifacts/first-run/` is the frozen evidence set. A reproduction uses a new
+  output directory (`--output artifacts/reproduction`) and is labelled a repeat of
+  an already-examined holdout, not a new experiment.

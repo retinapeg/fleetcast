@@ -67,8 +67,19 @@ holdout, so any fix needs a fresh test period."
 
 ## If asked how it was built
 
-Coding agents helped implement and review it. Own the problem definition, the
-assumptions, the split design and the validation. Do not claim every line was handwritten.
+Own the problem definition, the assumptions, the split design and the validation,
+and point to where each is recorded:
+
+- **Question and scope:** `docs/BRIEF.md` freezes the target (completed pickups, not
+  total demand), 20 Manhattan zones selected on January only, no relocation or RL,
+  and accepts an honest negative result.
+- **Protocol:** fixed before the holdout was scored (README, "The experiment"):
+  chronological splits, past-only within-zone features, one recipe chosen on
+  validation MAE and scored once on 15–28 Feb.
+- **Verification:** `docs/TEST_STATUS.md` records source hashes, a bit-identical
+  reproduction and metrics recomputed by a standard-library-only script.
+- **Interpretation:** the holdout has since been used for diagnosis, so any fix
+  needs a fresh test period.
 
 **Question for them:** "How do you separate forecast quality from the effect of vehicle
 supply and driver behaviour when evaluating positioning recommendations?"

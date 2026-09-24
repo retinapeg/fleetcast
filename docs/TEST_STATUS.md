@@ -18,9 +18,8 @@ What was verified in that pass, and what was not:
 | Busy-port branch | — | **NOT verified.** The prompt-and-kill path in `demo.sh` was never exercised |
 
 The browser-verification row in the table below predates this rebuild and describes
-the earlier single-page layout ("evidence expander"). The same applies to the
-`app.py:NN` line references in `REVIEW.md`. Both remain as dated historical records;
-they are **not** descriptions of the current file.
+the earlier single-page layout ("evidence expander"). It remains as a dated historical
+record; it is **not** a description of the current file.
 
 
 **PASS for the local demo.** Base HEAD
@@ -35,7 +34,7 @@ data and frozen predictions did not. No real-data model training or downloads ra
 | Full suite | `.venv/bin/python -m pytest -q` | **29 passed, 0 skipped, 1 warning**, final run 4.45 s |
 | Independent evidence | `.venv/bin/python artifacts/demo-readiness/verify_evidence.py` | PASS: all 12 metrics within 1e-9; 13,440 unique rows; 20 zones; all targets and baseline lags match local panel; source and panel hashes match |
 | Server | `.venv/bin/streamlit run app.py --server.port 8599 --server.address 127.0.0.1 --server.headless true --browser.gatherUsageStats false` | Starts; `/healthz` and `/` both HTTP 200 |
-| Real browser | Headless Chromium through rote/Playwright, http://127.0.0.1:8599 | Headline, baseline table, line/bar charts, zone/day selectors and evidence expander exercised |
+| Real browser | Headless Chromium through Playwright, http://127.0.0.1:8599 | Headline, baseline table, line/bar charts, zone/day selectors and evidence expander exercised |
 | Zone changes | Clinton East → Lenox Hill West → Penn Station/Madison Sq West | Captions/plots update; no app error |
 | Date changes | 2025-02-17 → 2025-02-24 | All-zone daily bias +5.16 → −1.29; both dates selectable |
 | Time slider | 2025-02-24 00:00 → 00:30 using keyboard | New timestamp renders; both charts remain present |
@@ -68,8 +67,6 @@ The earlier empty-state skip was removed by testing an isolated temporary copy.
 Local evidence: `artifacts/demo-readiness/` contains the independent checker and
 JSON result, original-file hashes, three screenshots and browser logs/snapshots.
 This directory follows the existing ignored-artifact policy; it is local evidence.
-Browser captures also reside in rote workspace `fleetcast-demo-20260915`.
-No reusable Play was scaffolded or published; only FleetCast readiness was in scope.
 
 ## Historical full reproduction evidence
 
@@ -82,8 +79,8 @@ inspected for diagnosis and is not a clean test for diagnosis-driven changes.
 **Verified 15 September 2026 on the target Mac** (Darwin 25.5.0, Apple Silicon),
 Python 3.12.14, numpy 2.5.3, pandas 2.3.3, scikit-learn 1.9.1, duckdb 1.5.5,
 streamlit 1.63.0. Every command below was executed in this environment and the
-output recorded as shown. This file supersedes the earlier authoring-environment
-status, which predated any real-data run.
+output recorded as shown. This file supersedes the earlier status, which
+predated any real-data run.
 
 ## What was executed
 
